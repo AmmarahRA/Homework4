@@ -1,4 +1,3 @@
-
 source("data-code/rating_variables.R")
 
 ## Assign yearly datasets and clean star rating information
