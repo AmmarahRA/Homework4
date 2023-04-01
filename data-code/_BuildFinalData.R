@@ -20,10 +20,22 @@ benchmark.final <- read_rds("data/output/ma_benchmark.rds") %>%
 ffs.costs.final <- read_rds("data/output/ffs_costs.rds")
 
 
-final.data <- final.ma.data %>%
+final.data <- full.ma.data %>%
+  inner_join(contract.service.area %>% 
+               select(contractid, fips, year), 
+             by=c("contractid", "fips", "year")) %>%
+  filter(!state %in% c("VI","PR","MP","GU","AS","") &
+           snp == "No" &
+           (planid < 800 | planid >= 900) &
+           !is.na(planid) & !is.na(fips))
+
+final.data <- final.data %>%
   left_join( star.ratings %>%
                select(-contract_name, -org_type, -org_marketing), 
-             by=c("contractid", "year")) 
+             by=c("contractid", "year")) %>%
+  left_join( ma.penetration.data %>% ungroup() %>% select(-ssa) %>%
+               rename(state_long=state, county_long=county), 
+             by=c("fips", "year"))
 
 # calculate star rating (Part C rating if plan doesn't offer part D, otherwise Part D rating if available)
 final.data <- final.data %>% ungroup() %>%
@@ -45,6 +57,8 @@ final.data <- final.data %>%
             by=c("state"))
 
 final.data <- final.data %>%
+  left_join( plan.premiums,
+             by=c("contractid","planid","state_name"="state","county","year")) %>%
   left_join( risk.rebate.final %>%
                select(-contract_name, -plan_type),
              by=c("contractid","planid","year")) %>%
@@ -100,5 +114,3 @@ final.data <- final.data %>%
 
 # save final dataset
 write_rds(final.data,"data/output/final_data.rds")
-
-
