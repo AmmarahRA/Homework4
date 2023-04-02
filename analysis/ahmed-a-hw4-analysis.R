@@ -10,8 +10,10 @@ plan_count<- final.data2 %>% group_by(fips, year, plan_type) %>% count() %>% arr
 plan.count.plot <- 
 
 plan_count %>% group_by(fips, year) %>% 
-  select(fips, year, n) %>% 
-  ggplot(aes(x = year, y = n, group)) +
+  select(fips, year) %>% 
+  group_by(fips, year, plan_type) %>%
+  summarise(count = count()) %>%
+  ggplot(aes(x = count, y = year)) +
   geom_boxplot(fill="blue", colour = "black", alpha=0.9) +
   labs(title = "Distribution of Plan Counts by County", x = "Year", y = "Plan Counts") +
   theme_bw()
@@ -47,17 +49,51 @@ f<- function(x) {
 }
   
 #2
-
 ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015') %>%
 ggplot(aes(x = as.factor(Star_Rating))) +
   geom_bar(aes(fill = as.factor(year))) +
   scale_fill_grey() + 
-  labs(title = "Distribution of Star Ratings for 2009, 2012 and 2015", x = "Star Ratings", y = "", fill="Year") +
+  labs(title = "Distribution of Star Ratings", x = "Star Ratings", y = "Count of Plans", fill="Year") +
   theme_bw()
   
 ratings.fig
 
 #3
+filtered_data <- final.data2 %>% filter(year %in% c(2009:2015))
+filtered_data <- filtered_data %>% mutate(avg_bench = mean(ma_rate))
+
+bench.fig<- filtered_data %>% ggplot(aes(x = year, y = ma_rate)) +
+  geom_line() +
+  labs(title = "Average Benchmark Payments, 2009-2015", x = "Year", y = "Average Benchmark Payments") +
+  theme_bw()
+bench.fig
+
+#4
+filtered_data <- filtered_data %>% mutate(mkt_share = avg_enrollment/avg_eligibles)
+
+share.fig <- filtered_data %>% group_by(fips, year) %>%
+  select(fips, year, mkt_share) %>%
+  ggplot(aes(x = year, y = mkt_share)) + 
+  geom_line() +
+  labs(title = "Share of Medicare Advanatge", x = "Year", y = "Market Share") +
+  theme_bw()
+share.fig
+
+#5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
