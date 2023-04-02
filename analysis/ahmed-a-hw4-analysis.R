@@ -47,8 +47,21 @@ f<- function(x) {
 }
   
 #2
-ratings <- ma.data %>5 filter() %>%
-ggplot(aes(x=as.factor(Star_Rating))) +
-  geom_bar(aes(fill=as.factor(year)), position=position) +
-  scale_fill_grey()
+
+ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015') %>%
+ggplot(aes(x = as.factor(Star_Rating))) +
+  geom_bar(aes(fill = as.factor(year))) +
+  scale_fill_grey() + 
+  labs(title = "Distribution of Star Ratings for 2009, 2012 and 2015", x = "Star Ratings", y = "", fill="Year") +
+  theme_bw()
   
+ratings.fig
+
+#3
+
+
+
+
+
+
+
