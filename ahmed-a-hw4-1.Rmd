@@ -24,14 +24,83 @@ load("homework4_workspace.Rdata")
 # Summarise the Data
 ## Question 1
 
-```{r}
-
+```{r, include=FALSE}
+plan.count.fig <- plan_count %>%
+  ggplot(aes(x = as.factor(year), y = log(n))) +
+  geom_boxplot() +
+  labs(title = "Distribution of Plan Counts by County", x = "Year", y = "Plan Counts") +
+  theme_bw()
 ```
 
+```{r plan.count.fig, include=T, eval=T, echo=F, fig.cap="Distribution of Plan Counts by County"}
+plan.count.fig
+```
 
+## Question 2
+```{r, include=FALSE}
+ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015') %>%
+ggplot(aes(x = as.factor(Star_Rating))) +
+  geom_bar(aes(fill = as.factor(year))) +
+  scale_fill_grey() + 
+  labs(title = "Distribution of Star Ratings", x = "Star Ratings", y = "Count of Plans", fill="Year") +
+  theme_bw()
+```
 
+```{r ratings.fig, include=T, eval=T, echo=F, fig.cap="Distribution of Star Ratings (2009, 2012 & 2015)"}
+ratings.fig
+```
 
+## Question 3
+```{r, include=FALSE}
+bench.fig<- filtered_data %>% ggplot(aes(x = year, y = ma_rate)) +
+  geom_line() +
+  labs(title = "Average Benchmark Payments, 2009-2015", x = "Year", y = "Average Benchmark Payments") +
+  theme_bw()
+```
 
+```{r bench.fig, include=T, eval=T, echo=F, fig.cap="Average Benchmark Payments, 2009-2015"}
+bench.fig
+```
+
+## Question 4
+```{r, include=FALSE}
+share.fig <- filtered_data %>% group_by(fips, year) %>%
+  ggplot(aes(x = year, y = mkt_share)) + 
+  geom_line() +
+  labs(title = "Share of Medicare Advanatge", x = "Year", y = "Market Share") +
+  theme_bw()
+```
+
+```{r share.fig, include=T, eval=T, echo=F, fig.cap="Share of Medicare Advanatge, 2009-2015"}
+share.fig
+```
+
+# Estimate ATE
+
+## Question 1
+```{r, include=FALSE}
+plans_table <- final.data.2009 %>% group_by(Star_Rating) %>% summarize(avg_ind = mean(indicator))
+```
+
+```{r table5, include=T, eval=T, echo=F}
+options(knitr.kable.NA = 0)
+knitr::kable(plans_table, 
+             col.names=c("Star Rating", "Average Indicator"),
+             format.args = list(big.mark=","), 
+             caption = "Number of Plans",
+             booktabs = TRUE) %>%
+  kable_styling(latex_options = c("hold_position"))
+```
+
+## Question 2
+
+## Question 3
+
+## Question 4
+
+## Question 5
+
+## Question 6
 
 
 
