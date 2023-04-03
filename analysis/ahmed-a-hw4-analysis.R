@@ -4,7 +4,7 @@ pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table
 final.data <- read_rds("data/output/final_data.rds")
 
 #1
-final.data2 <- final.data %>% filter(snp == 'No' & !is.na(partc_score) & (planid < 800 | planid >= 900)) 
+final.data2 <- final.data %>% filter(snp == 'No' & (planid < 800 | planid >= 900)) 
 plan_count<- final.data2 %>% group_by(fips, year) %>% summarise(n = n())
 
 plan.count.fig <- plan_count %>%
@@ -16,9 +16,9 @@ plan.count.fig <- plan_count %>%
 plan.count.fig
   
 #2
-ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015') %>%
+ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015' & !is.na(Star_Rating)) %>%
 ggplot(aes(x = as.factor(Star_Rating))) +
-  geom_bar(aes(fill = as.factor(year))) +
+  geom_bar(aes(fill = as.factor(year)), position = "dodge") +
   scale_fill_grey() + 
   labs(title = "Distribution of Star Ratings", x = "Star Ratings", y = "Count of Plans", fill="Year") +
   theme_bw()
@@ -26,27 +26,34 @@ ggplot(aes(x = as.factor(Star_Rating))) +
 ratings.fig
 
 #3
-filtered_data <- final.data2 %>% filter(year %in% c(2009:2015))
-filtered_data <- filtered_data %>% mutate(avg_bench = mean(ma_rate))
+filtered_data <- final.data %>% filter(year %in% c(2009:2015))
 
-bench.fig<- filtered_data %>% ggplot(aes(x = year, y = ma_rate)) +
-  geom_line() +
+bench.fig<- filtered_data %>% 
+  group_by(year) %>%
+  summarise(avg_bench = mean(ma_rate , na.rm = TRUE)) %>%
+  ggplot(aes(x = as.factor(year), y = avg_bench)) +
+  geom_bar(stat = "identity") +
   labs(title = "Average Benchmark Payments, 2009-2015", x = "Year", y = "Average Benchmark Payments") +
   theme_bw()
 bench.fig
 
 #4
-filtered_data <- filtered_data %>% mutate(mkt_share = avg_enrollment/avg_eligibles)
+filtered_data2 <- filtered_data %>% group_by(fips, year) %>% 
+  summarise(enroll = first(avg_enrolled), medicare=first(avg_eligibles), 
+                                             bench=mean(ma_rate, na.rm = TRUE)) %>%
+  mutate(mkt_share = enroll/medicare) %>% 
+  group_by(year) %>%
+  summarise(avg_share = mean(mkt_share, na.rm = TRUE))
 
-share.fig <- filtered_data %>% group_by(fips, year) %>%
-  ggplot(aes(x = year, y = mkt_share)) + 
-  geom_line() +
+share.fig <- filtered_data2 %>% 
+  ggplot(aes(x = as.factor(year), y = avg_share, group=1)) + 
+  stat_summary(fun.y = "mean", geom = "line", na.rm = TRUE) +
   labs(title = "Share of Medicare Advanatge", x = "Year", y = "Market Share") +
   theme_bw()
 share.fig
 
 #5
-data_09<- final.data2 %>% filter(year == 2009)
+data_09<- final.data2 %>% filter(!is.na(avg_enrollment & year == 2009))
 data_09<- data_09 %>% mutate(raw_rating=rowMeans(
   cbind(breastcancer_screen,rectalcancer_screen,cv_cholscreen,diabetes_cholscreen,
         glaucoma_test,monitoring,flu_vaccine,pn_vaccine,physical_health,
@@ -171,6 +178,30 @@ reg_4_6 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
 reg_45_6 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
                       h=0.15, p=1, kernel="uniform", vce="hc0",
                       masspoints="off")
+
+ma.rd1 <- table_6 %>%
+  filter(Star_Rating==2.5 | Star_Rating==3)
+rd_plot1<- rdplot(y=ma.rd1$mkt_share, x=ma.rd1$score1, binselect="es",
+       title="RD Plot: Market Share for 2.5 vs 3 Stars", x.label="Summary Score",
+       y.label="Market Share", masspoints="off")
+
+ma.rd2 <- table_6 %>%
+  filter(Star_Rating==3 | Star_Rating==3.5)
+rd_plot2 <- rdplot(y=ma.rd2$mkt_share, x=ma.rd2$score2, binselect="es",
+                   title="RD Plot: Market Share for 3 vs 3.5 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
+
+ma.rd3 <- table_6 %>%
+  filter(Star_Rating==3.5 | Star_Rating==4)
+rd_plot3 <- rdplot(y=ma.rd3$mkt_share, x=ma.rd3$score3, binselect="es",
+                   title="RD Plot: Market Share for 3.5 vs 4 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
+
+ma.rd4 <- table_6 %>%
+  filter(Star_Rating==4 | Star_Rating==4.5)
+rd_plot4 <- rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
+                   title="RD Plot: Market Share for 4 vs 4.5 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
 
 #4
 
