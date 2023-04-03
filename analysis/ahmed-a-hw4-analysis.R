@@ -172,9 +172,11 @@ reg_45_6 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
                       h=0.15, p=1, kernel="uniform", vce="hc0",
                       masspoints="off")
 
-fig_6<- rdplot(y=table_6$mkt_share, x=table_6$score, binselect="es",
-       title="RD Plot: Market Share", x.label="Summary Score",
-       y.label="Market Share", masspoints="off")
+#4
+
+#5
+
+
 
 
 save.image("homework4_workspace.Rdata")
