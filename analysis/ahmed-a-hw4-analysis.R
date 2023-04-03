@@ -4,39 +4,16 @@ pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table
 final.data <- read_rds("data/output/final_data.rds")
 
 #1
-final.data2 <- final.data %>% filter(snp == 'No' & !is.na(partc_score) & !(planid %in% 800:899)) 
-plan_count<- final.data2 %>% group_by(fips, year, plan_type) %>% count() %>% arrange(-n)
+final.data2 <- final.data %>% filter(snp == 'No' & !is.na(partc_score) & (planid < 800 | planid >= 900)) 
+plan_count<- final.data2 %>% group_by(fips, year) %>% summarise(n = n())
 
-plan.count.plot <- ggplot(final.data2, aes(x = ))
-
-plan_count %>% group_by(fips, year) %>% 
-  select(fips, year) %>% 
-  group_by(fips, year, plan_type) %>%
-  summarise(count = count()) %>%
-  ggplot(aes(x = count, y = year)) +
-  geom_boxplot(fill="blue", colour = "black", alpha=0.9) +
+plan.count.fig <- plan_count %>%
+  ggplot(aes(x = as.factor(year), y = log(n))) +
+  geom_boxplot() +
   labs(title = "Distribution of Plan Counts by County", x = "Year", y = "Plan Counts") +
   theme_bw()
 
-plan.count.plot
-
-chart_unemployed<- ggplot(df.employment, aes(x=S003, y= D1)) +
-  geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin = D1 - CI_1, ymax = D1 + CI_1),
-                width = 0.2) +
-  labs(title = "Difference in wellbeing (full time and unemployed)",
-       x = "Country",
-       y = "Difference in Means") +
-  theme_bw()
-print(chart_unemployed)
-
-#create function for box and whisker plot   
-f<- function(x) {
-  r<- quantile(x, probs=c(0.10,0.25,0.5,0.75,0.90))  
-  names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
-  r
-  
-}
+plan.count.fig
   
 #2
 ratings.fig <- final.data2 %>% filter(year == '2009'| year == '2012'| year == '2015') %>%
@@ -200,3 +177,4 @@ fig_6<- rdplot(y=table_6$mkt_share, x=table_6$score, binselect="es",
        y.label="Market Share", masspoints="off")
 
 
+save.image("homework4_workspace.Rdata")
