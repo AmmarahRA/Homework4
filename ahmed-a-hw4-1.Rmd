@@ -1,0 +1,38 @@
+---
+title: "Homework 4 - Research in Health Economics"
+author: "Ammarah Ahmed"
+date: ""
+header-includes:
+  - \usepackage{booktabs}
+output: 
+  bookdown::pdf_document2:
+    fig_caption: yes
+    toc: false
+---
+```{r setup, include=FALSE}
+pacman::p_load(Matching, tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, readr, data.table, gdata, scales, kableExtra, modelsummary, fixest, imputeTS, rdrobust)
+```
+
+```{r, warning = FALSE, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning = FALSE)
+```
+
+```{r, include=FALSE}
+load("homework4_workspace.Rdata")
+```
+
+# Summarise the Data
+## Question 1
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
