@@ -29,6 +29,7 @@ load("homework4_workspace.Rdata")
 plan.count.fig
 ```
 
+
 Figure \@ref(fig:plancountfig) shows the distribution of plan counts by country per year. On average, each county has 3 plans or less which might be too few as these plans ight not cover everyone's needs regarding health insurance. 
 
 \newpage 
@@ -39,6 +40,7 @@ Figure \@ref(fig:plancountfig) shows the distribution of plan counts by country 
 ratings.fig
 ```
 
+
 The Distribution of Star Ratings for the years 2009, 2012 and 2015 are shown in Figure \@ref(fig:ratingsfig). It shows that plans with higher star ratings became more prevalent in 2015 compared to 2009 which could suggest that the helath insurance plans have been improving in quality over time. 
 
 \newpage
@@ -48,6 +50,8 @@ The Distribution of Star Ratings for the years 2009, 2012 and 2015 are shown in 
 ```{r benchfig, include=T, eval=T, echo=F, fig.cap="Average Benchmark Payments, 2009-2015"}
 bench.fig
 ```
+
+
 The change in average benchmark payments from 2009 to 2015 is shown in Figure \@ref(fig:benchfig) which shows that the average benchmark payment has remained constant at $800 from 2009 till 2012, after which it increased in 2013 and 2014, before falling again in 2015.
 
 \newpage
@@ -57,6 +61,7 @@ The change in average benchmark payments from 2009 to 2015 is shown in Figure \@
 ```{r sharefig, include=T, eval=T, echo=F, fig.cap="Share of Medicare Advanatge, 2009-2015"}
 share.fig
 ```
+
 As shown in Figure \@ref(fig:sharefig), the average share of Medicare Advantage has increased significantly from 2009 to 2015, indicating an increase in its popularity over time. As the benchmark payments have remained more or less constant during this time period, it suggests that more people preferred Medicare Advantage compared to other options probably due to factors such as better quality or coverage. 
 
 \newpage
