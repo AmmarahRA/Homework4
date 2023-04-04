@@ -1,0 +1,94 @@
+---
+title: "Homework 4 - Research in Health Economics"
+author: "Ammarah Ahmed"
+date: ""
+header-includes:
+  - \usepackage{booktabs}
+output: 
+  bookdown::pdf_document2:
+    fig_caption: yes
+    toc: false
+---
+```{r setup, include=FALSE}
+pacman::p_load(Matching, tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, readr, data.table, gdata, scales, kableExtra, modelsummary, fixest, imputeTS, rdrobust)
+```
+
+```{r, warning = FALSE, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning = FALSE)
+```
+
+```{r, include=FALSE}
+load("homework4_workspace.Rdata")
+```
+
+# Summarise the Data
+
+## Question 1
+
+```{r plancountfig, include=T, eval=T, echo=F, fig.cap="Distribution of Plan Counts by County"}
+plan.count.fig
+```
+
+Figure \@ref(fig:plancountfig) shows the distribution of plan counts by country per year. On average, each county has 3 plans or less which might be too few as these plans ight not cover everyone's needs regarding health insurance. 
+
+\newpage 
+
+## Question 2
+
+```{r ratingsfig, include=T, eval=T, echo=F, fig.cap="Distribution of Star Ratings (2009, 2012 & 2015)"}
+ratings.fig
+```
+
+The Distribution of Star Ratings for the years 2009, 2012 and 2015 are shown in Figure \@ref(fig:ratingsfig). It shows that plans with higher star ratings became more prevalent in 2015 compared to 2009 which could suggest that the helath insurance plans have been improving in quality over time. 
+
+\newpage
+
+## Question 3
+
+```{r benchfig, include=T, eval=T, echo=F, fig.cap="Average Benchmark Payments, 2009-2015"}
+bench.fig
+```
+The change in average benchmark payments from 2009 to 2015 is shown in Figure \@ref(fig:benchfig) which shows that the average benchmark payment has remained constant at $800 from 2009 till 2012, after which it increased in 2013 and 2014, before falling again in 2015.
+
+\newpage
+
+## Question 4
+
+```{r sharefig, include=T, eval=T, echo=F, fig.cap="Share of Medicare Advanatge, 2009-2015"}
+share.fig
+```
+As shown in Figure \@ref(fig:sharefig), the average share of Medicare Advantage has increased significantly from 2009 to 2015, indicating an increase in its popularity over time. As the benchmark payments have remained more or less constant during this time period, it suggests that more people preferred Medicare Advantage compared to other options probably due to factors such as better quality or coverage. 
+
+\newpage
+
+# Estimate ATE
+
+## Question 1
+```{r, include=FALSE}
+plans_table <- final.data.2009 %>% group_by(Star_Rating) %>% summarize(avg_ind = mean(indicator))
+```
+
+```{r table5, include=T, eval=T, echo=F}
+options(knitr.kable.NA = 0)
+knitr::kable(plans_table, 
+             col.names=c("Star Rating", "Average Indicator"),
+             format.args = list(big.mark=","), 
+             caption = "Number of Plans",
+             booktabs = TRUE) %>%
+  kable_styling(latex_options = c("hold_position"))
+```
+
+## Question 2
+Cannot use model summary to display table as it gives an error
+
+## Question 3
+Not sure how to display all the regression results in one graph
+
+## Question 4,5,6
+Need to plot graphs to answer these questions and I was unable to figure out how to plot them
+
+
+
+
+
+
