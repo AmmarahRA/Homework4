@@ -97,6 +97,8 @@ knitr::kable(table.reg,
   kable_styling(latex_options = c("hold_position"))
 ```
 
+\newpage 
+
 ## Question 3
 ```{r rdplot1, include=T, eval=T, echo=F, fig.cap="Estimate of Star Rating Effects, 2.5 vs 3 Stars"}
 rdplot(y=ma.rd1$mkt_share, x=ma.rd1$score1, binselect="es",
@@ -123,6 +125,8 @@ rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
 ```
 
 The graphs looks wrong as the range is incorrect but I am unable to fix the error
+
+\newpage 
 
 ## Question 4
 Need to plot graphs to answer these questions and I was unable to figure out how to plot them
