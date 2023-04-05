@@ -70,7 +70,7 @@ As shown in Figure \@ref(fig:sharefig), the average share of Medicare Advantage 
 
 ## Question 1
 ```{r, include=FALSE}
-plans_table <- final.data.2009 %>% group_by(Star_Rating) %>% summarize(avg_ind = mean(indicator))
+plans_table 
 ```
 
 ```{r table5, include=T, eval=T, echo=F}
@@ -84,13 +84,52 @@ knitr::kable(plans_table,
 ```
 
 ## Question 2
-Cannot use model summary to display table as it gives an error
+```{r, include=FALSE}
+table.reg
+```
+```{r tablereg, include=T, eval=T, echo=F}
+options(knitr.kable.NA = 0)
+knitr::kable(table.reg, 
+             col.names=c("Star Rating", "Estimate"),
+             format.args = list(big.mark=","), 
+             caption = "Estimate of Star Rating Effect",
+             booktabs = TRUE) %>%
+  kable_styling(latex_options = c("hold_position"))
+```
 
 ## Question 3
-Not sure how to display all the regression results in one graph
+```{r rdplot1, include=T, eval=T, echo=F, fig.cap="Estimate of Star Rating Effects, 2.5 vs 3 Stars"}
+rdplot(y=ma.rd1$mkt_share, x=ma.rd1$score1, binselect="es",
+       title="RD Plot: Market Share for 2.5 vs 3 Stars", x.label="Summary Score",
+       y.label="Market Share", masspoints="off")
+```
 
-## Question 4,5,6
+```{r rdplot2, include=T, eval=T, echo=F, fig.cap="Estimate of Star Rating Effects, 3 vs 3.5 Stars"}
+rdplot(y=ma.rd2$mkt_share, x=ma.rd2$score2, binselect="es",
+                   title="RD Plot: Market Share for 3 vs 3.5 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
+```
+
+```{r rdplot3, include=T, eval=T, echo=F, fig.cap="Estimate of Star Rating Effects, 3.5 vs 4 Stars"}
+rdplot(y=ma.rd3$mkt_share, x=ma.rd3$score3, binselect="es",
+                   title="RD Plot: Market Share for 3.5 vs 4 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
+```
+
+```{r rdplot4, include=T, eval=T, echo=F, fig.cap="Estimate of Star Rating Effects, 4 vs 4.5 Stars"}
+rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
+                   title="RD Plot: Market Share for 4 vs 4.5 Stars", x.label="Summary Score",
+                   y.label="Market Share", masspoints="off")
+```
+
+The graphs looks wrong as the range is incorrect but I am unable to fix the error
+
+## Question 4
 Need to plot graphs to answer these questions and I was unable to figure out how to plot them
+
+## Question 5
+
+## Question 6
 
 
 
