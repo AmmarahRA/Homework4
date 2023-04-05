@@ -97,6 +97,9 @@ reg_45 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
                     h=0.125, p=1, kernel="uniform", vce="hc0",
                     masspoints="off")
 
+table.reg<- data.frame(Star_Rating = c("2.5 vs 3", "3.5 vs 4", "4 vs 4.5"),
+           Estimate = c(reg_25$Estimate[1], reg_3$coef[1], reg_4$coef[1]))
+
 #7
 # bandwidth 0.1
 reg_25_2 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
@@ -179,8 +182,6 @@ reg_45_6 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
                       h=0.15, p=1, kernel="uniform", vce="hc0",
                       masspoints="off")
 
-#4
-
 ma.rd1 <- table_6 %>%
   filter(Star_Rating==2.5 | Star_Rating==3)
 
@@ -206,7 +207,10 @@ rd_plot4 <- rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
                    title="RD Plot: Market Share for 4 vs 4.5 Stars", x.label="Summary Score",
                    y.label="Market Share", masspoints="off")
 
-#5
+#8
+
+#9
+
 
 
 
