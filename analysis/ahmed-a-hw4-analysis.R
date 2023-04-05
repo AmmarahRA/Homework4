@@ -1,6 +1,7 @@
 install.packages('rdrobust')
-install.packages('rddensity')
-pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest, modelsummary, rdrobust, rddensity)
+install.packages('broom')
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest,
+               modelsummary, rdrobust, broom)
 
 final.data <- read_rds("data/output/final_data.rds")
 
@@ -54,7 +55,7 @@ share.fig <- filtered_data2 %>%
 share.fig
 
 #5
-data_09<- final.data2 %>% filter(!is.na(avg_enrollment & year == 2009))
+data_09<- final.data %>% filter(!(is.na(avg_enrollment)) & year == 2009)
 data_09<- data_09 %>% mutate(raw_rating=rowMeans(
   cbind(breastcancer_screen,rectalcancer_screen,cv_cholscreen,diabetes_cholscreen,
         glaucoma_test,monitoring,flu_vaccine,pn_vaccine,physical_health,
@@ -68,120 +69,115 @@ data_09<- data_09 %>% mutate(raw_rating=rowMeans(
         appeals_review),
   na.rm=T))
 
-final.data.2009 <- data_09[!is.na(data_09$Star_Rating), ]
-final.data.2009$indicator <- ifelse(final.data.2009$Star_Rating > final.data.2009$raw_rating, 1,0)
-
-plans_table <- final.data.2009 %>% group_by(Star_Rating) %>% summarize(avg_ind = mean(indicator))
+plan_table <- data_09 %>% 
+  mutate(rounded_30 = ifelse(raw_rating>=2.75 & raw_rating<3.00 & Star_Rating==3.0,1,0),
+         rounded_35 = ifelse(raw_rating>=3.25 & raw_rating<3.50 & Star_Rating==3.5,1,0),
+         rounded_40 = ifelse(raw_rating>=3.75 & raw_rating<4.00 & Star_Rating==4.0,1,0),
+         rounded_45 = ifelse(raw_rating>=4.25 & raw_rating<4.50 & Star_Rating==4.5,1,0),
+         rounded_50 = ifelse(raw_rating>=4.50 & raw_rating<5.00 & Star_Rating==5.0,1,0),
+         ) %>%
+  group_by(factor(Star_Rating)) %>%
+  filter(Star_Rating %in% c(3, 3.5, 4, 4.5, 5)) %>%
+  summarise(count_30=sum(rounded_30),
+            count_35=sum(rounded_35),
+            count_40=sum(rounded_40),
+            count_45=sum(rounded_45),
+            count_50=sum(rounded_50))
+plan_table
 
 #6
-table_6 <- final.data.2009 %>%
-  mutate(score1 = raw_rating - 2.75,
-         score2 = raw_rating - 3.25, 
-         score3 = raw_rating - 3.75, 
-         score4 = raw_rating - 4.25,
-         mkt_share = avg_enrollment/avg_eligibles,
-         ln_share = log(mkt_share))
 
-reg_25 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                   h=0.125, p=1, kernel="uniform", vce="hc0",
-                   masspoints="off")
+data_09 <- data_09 %>%
+  mutate(score = raw_rating - 2.25,
+         treat = (score>=0),
+         window1 = (score>=-.175 & score<=.175),
+         window2 = (score>=-.125 & score<=.125),
+         score_treat=score*treat)
 
-reg_3 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                  h=0.125, p=1, kernel="uniform", vce="hc0",
-                  masspoints="off")
+star30 <- lm(avg_enrollment ~ treat + score,
+               data = (data_09 %>% 
+                         filter(raw_rating>=(2.75-0.125),
+                                raw_rating<=(2.75+0.125),
+                                Star_Rating %in% c(2.5,3.0)) %>%
+                         mutate(treat=(Star_Rating==3.0),
+                                score=raw_rating-2.75)))
+coef.30.1 <- tidy(star30, conf.int=TRUE) %>% mutate(rating=30)
 
-reg_4 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                  h=0.125, p=1, kernel="uniform", vce="hc0",
-                  masspoints="off")
+star35 <- lm(avg_enrollment ~ treat + score,
+               data = (data_09 %>% 
+                         filter(raw_rating>=(3.25-0.125),
+                                raw_rating<=(3.25+0.125),
+                                Star_Rating %in% c(3.0,3.5)) %>%
+                         mutate(treat=(Star_Rating==3.5),
+                                score=raw_rating-3.25)))
+coef.35.1 <- tidy(star35, conf.int=TRUE) %>% mutate(rating=35)
 
-reg_45 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                    h=0.125, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
+star40 <- lm(avg_enrollment ~ treat + score,
+               data = (data_09 %>% 
+                         filter(raw_rating>=(3.75-0.125),
+                                raw_rating<=(3.75+0.125),
+                                Star_Rating %in% c(3.5,4.0)) %>%
+                         mutate(treat=(Star_Rating==4.0),
+                                score=raw_rating-3.75)))
+coef.40.1 <- tidy(star30, conf.int=TRUE) %>% mutate(rating=40)
 
-table.reg<- data.frame(Star_Rating = c("2.5 vs 3", "3.5 vs 4", "4 vs 4.5"),
-           Estimate = c(reg_25$Estimate[1], reg_3$coef[1], reg_4$coef[1]))
+star45 <- lm(avg_enrollment ~ treat + score,
+               data = (data_09 %>% 
+                         filter(raw_rating>=(4.25-0.125),
+                                raw_rating<=(4.25+0.125),
+                                Star_Rating %in% c(4.0,4.5)) %>%
+                         mutate(treat=(Star_Rating==4.5),
+                                score=raw_rating-4.25)))
+coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
+
+
+#table.reg<- data.frame(Star_Rating = c("2.5 vs 3", "3.5 vs 4", "4 vs 4.5"),
+#Estimate = c(reg_25$Estimate[1], reg_3$coef[1], reg_4$coef[1]))
 
 #7
-# bandwidth 0.1
-reg_25_2 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                   h=0.1, p=1, kernel="uniform", vce="hc0",
-                   masspoints="off")
 
-reg_3_2 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                  h=0.1, p=1, kernel="uniform", vce="hc0",
-                  masspoints="off")
+for (h in seq(0.1, 0.15, 0.01)) {
+  star30bw <- lm(avg_enrollment ~ treat + score,
+                 data = (data_09 %>% 
+                           filter(raw_rating>=(2.75-h),
+                                  raw_rating<=(2.75+h),
+                                  Star_Rating %in% c(2.5,3.0)) %>%
+                           mutate(treat=(Star_Rating==3.0),
+                                  score=raw_rating-2.75)))
+  coef.30 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=30)
+  
+  star35bw <- lm(avg_enrollment ~ treat + score,
+                 data = (data_09 %>% 
+                           filter(raw_rating>=(3.25-h),
+                                  raw_rating<=(3.25+h),
+                                  Star_Rating %in% c(3.0,3.5)) %>%
+                           mutate(treat=(Star_Rating==3.5),
+                                  score=raw_rating-3.25)))
+  coef.35 <- tidy(star35bw, conf.int=TRUE) %>% mutate(rating=35)
+  
+  star40bw <- lm(avg_enrollment ~ treat + score,
+                 data = (data_09 %>% 
+                           filter(raw_rating>=(3.75-h),
+                                  raw_rating<=(3.75+h),
+                                  Star_Rating %in% c(3.5,4.0)) %>%
+                           mutate(treat=(Star_Rating==4.0),
+                                  score=raw_rating-3.75)))
+  coef.40 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=40)
+  
+  star45bw <- lm(avg_enrollment ~ treat + score,
+                 data = (data_09 %>% 
+                           filter(raw_rating>=(4.25-h),
+                                  raw_rating<=(4.25+h),
+                                  Star_Rating %in% c(4.0,4.5)) %>%
+                           mutate(treat=(Star_Rating==4.5),
+                                  score=raw_rating-4.25)))
+  coef.45 <- tidy(star45bw, conf.int=TRUE) %>% mutate(rating=45)
+}
 
-reg_4_2 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                  h=0.1, p=1, kernel="uniform", vce="hc0",
-                  masspoints="off")
 
-reg_45_2 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                    h=0.1, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-#bandwidth 0.12
-reg_25_3 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                     h=0.12, p=1, kernel="uniform", vce="hc0",
-                     masspoints="off")
+est.collect <- rbind(coef.30, coef.35, coef.40) %>%
+  mutate(bandwidth=h)
 
-reg_3_3 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                    h=0.12, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_4_3 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                    h=0.12, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_45_3 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                      h=0.12, p=1, kernel="uniform", vce="hc0",
-                      masspoints="off")
-#bandwidth 0.13
-reg_25_4 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                     h=0.13, p=1, kernel="uniform", vce="hc0",
-                     masspoints="off")
-
-reg_3_4 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                    h=0.13, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_4_4 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                    h=0.13, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_45_4 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                      h=0.13, p=1, kernel="uniform", vce="hc0",
-                      masspoints="off")
-#bandwidth 0.14
-reg_25_5 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                     h=0.14, p=1, kernel="uniform", vce="hc0",
-                     masspoints="off")
-
-reg_3_5 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                    h=0.14, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_4_5 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                    h=0.14, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_45_5 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                      h=0.14, p=1, kernel="uniform", vce="hc0",
-                      masspoints="off")
-#bandwidth 0.15
-reg_25_6 <- rdrobust(y=table_6$mkt_share, x=table_6$score1, c=0,
-                     h=0.15, p=1, kernel="uniform", vce="hc0",
-                     masspoints="off")
-
-reg_3_6 <- rdrobust(y=table_6$mkt_share, x=table_6$score2, c=0,
-                    h=0.15, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_4_6 <- rdrobust(y=table_6$mkt_share, x=table_6$score3, c=0,
-                    h=0.15, p=1, kernel="uniform", vce="hc0",
-                    masspoints="off")
-
-reg_45_6 <-  rdrobust(y=table_6$mkt_share, x=table_6$score4, c=0,
-                      h=0.15, p=1, kernel="uniform", vce="hc0",
-                      masspoints="off")
 
 ma.rd1 <- table_6 %>%
   filter(Star_Rating==2.5 | Star_Rating==3)
