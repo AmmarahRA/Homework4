@@ -1,5 +1,6 @@
 install.packages('rdrobust')
-pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest, modelsummary, rdrobust)
+install.packages('rddensity')
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest, modelsummary, rdrobust, rddensity)
 
 final.data <- read_rds("data/output/final_data.rds")
 
@@ -208,6 +209,17 @@ rd_plot4 <- rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
                    y.label="Market Share", masspoints="off")
 
 #8
+dens25 <- rddensity(ma.rd1$score1, c=0)
+rdplotdensity(dens25, ma.rd1$score1)
+
+dens3 <- rddensity(ma.rd2$score2, c=0)
+rdplotdensity(dens3, ma.rd2$score2)
+
+dens4 <- rddensity(ma.rd3$score3, c=0)
+rdplotdensity(dens4, ma.rd3$score3)
+
+dens45 <- rddensity(ma.rd4$score4, c=0)
+rdplotdensity(dens45, ma.rd4$score4)
 
 #9
 

@@ -10,7 +10,7 @@ output:
     toc: false
 ---
 ```{r setup, include=FALSE}
-pacman::p_load(Matching, tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, readr, data.table, gdata, scales, kableExtra, modelsummary, fixest, imputeTS, rdrobust)
+pacman::p_load(Matching, tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, readr, data.table, gdata, scales, kableExtra, modelsummary, fixest, imputeTS, rdrobust, rddensity)
 ```
 
 ```{r, warning = FALSE, echo = FALSE, message = FALSE}
@@ -129,12 +129,29 @@ The graphs looks wrong as the range is incorrect but I am unable to fix the erro
 \newpage 
 
 ## Question 4
-Need to plot graphs to answer these questions and I was unable to figure out how to plot them
+```{r densplot1, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 2.5 vs 3 Stars"}
+rdplotdensity(dens25, ma.rd1$score1)
+```
+
+```{r densplot2, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3 vs 3.5 Stars"}
+rdplotdensity(dens3, ma.rd2$score2)
+```
+
+```{r densplot3, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3.5 vs 4 Stars"}
+rdplotdensity(dens4, ma.rd3$score3)
+```
+
+```{r densplot4, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 4 vs 4.5 Stars"}
+rdplotdensity(dens45, ma.rd4$score4)
+```
+
+\newpage 
 
 ## Question 5
+Not sure how to check for manipulation of running variable with specific plan characteristic. Should I filter for the plan types and then use the new dataset? 
 
 ## Question 6
-
+I have incomplete or incorrect answers for some of the questions so I am unable to answer this properly
 
 
 
