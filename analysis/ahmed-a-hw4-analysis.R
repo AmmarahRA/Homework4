@@ -1,5 +1,3 @@
-install.packages('rdrobust')
-install.packages('broom')
 pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest,
                modelsummary, rdrobust, broom)
 
@@ -131,8 +129,8 @@ star45 <- lm(avg_enrollment ~ treat + score,
 coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
 
 
-#table.reg<- data.frame(Star_Rating = c("2.5 vs 3", "3.5 vs 4", "4 vs 4.5"),
-#Estimate = c(reg_25$Estimate[1], reg_3$coef[1], reg_4$coef[1]))
+table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1) %>% 
+  mutate(bandwidth=h)
 
 #7
 
@@ -177,6 +175,13 @@ for (h in seq(0.1, 0.15, 0.01)) {
 
 est.collect <- rbind(coef.30, coef.35, coef.40) %>%
   mutate(bandwidth=h)
+
+
+
+
+
+
+
 
 
 ma.rd1 <- table_6 %>%
