@@ -1,5 +1,5 @@
 pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest,
-               modelsummary, rdrobust, broom)
+               modelsummary, rdrobust, broom, cobalt)
 
 final.data <- read_rds("data/output/final_data.rds")
 
@@ -129,8 +129,9 @@ star45 <- lm(avg_enrollment ~ treat + score,
 coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
 
 
-table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1) %>% 
-  mutate(bandwidth=h)
+table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1, coef.45.1) %>% 
+  mutate(bandwidth=0.125)
+
 
 #7
 
@@ -170,17 +171,22 @@ for (h in seq(0.1, 0.15, 0.01)) {
                            mutate(treat=(Star_Rating==4.5),
                                   score=raw_rating-4.25)))
   coef.45 <- tidy(star45bw, conf.int=TRUE) %>% mutate(rating=45)
+  
+  est.collect <- rbind(coef.30, coef.35, coef.40) %>%
+    mutate(bandwidth = h)
 }
 
 
-est.collect <- rbind(coef.30, coef.35, coef.40) %>%
-  mutate(bandwidth=h)
 
+rd.estimates <- est.collect %>% filter(term=="treatTRUE") %>% 
+  ggplot(aes(x=as.factor(bandwidth), y=estimate, shape=as.factor(rating))) +
+  geom_hline(aes(yintercept=0), linetype="dashed") +
+  geom_errorbar(aes(ymin=conf.low, ymax=conf.high),
+                lwd=1, width=0, position=position_dodge(width=0.5)) +
+  labs(title = "Star Rating Estimates", x="Bandwidth", y="Estimate") +
+  theme_bw()
 
-
-
-
-
+rd.estimates
 
 
 
@@ -191,9 +197,9 @@ rd_plot1<- rdplot(y=ma.rd1$mkt_share, x=ma.rd1$score1, binselect="es",
        title="RD Plot: Market Share for 2.5 vs 3 Stars", x.label="Summary Score",
        y.label="Market Share", masspoints="off")
 
-ma.rd2 <- table_6 %>%
-  filter(Star_Rating==3 | Star_Rating==3.5)
-rd_plot2 <- rdplot(y=ma.rd2$mkt_share, x=ma.rd2$score2, binselect="es",
+ma.rd2 <- est.collect %>%
+  filter(rating==30 | rating==35)
+rd_plot2 <- rdplot(y=ma.rd2$mkt_share, x=ma.rd2$score, binselect="es",
                    title="RD Plot: Market Share for 3 vs 3.5 Stars", x.label="Summary Score",
                    y.label="Market Share", masspoints="off")
 
@@ -222,8 +228,25 @@ rdplotdensity(dens4, ma.rd3$score3)
 dens45 <- rddensity(ma.rd4$score4, c=0)
 rdplotdensity(dens45, ma.rd4$score4)
 
+match.dat  matchit(treat~premium_partc + ma_rate,
+                   data=ma.rd225 %>%
+                     filter(window2 TRUE,
+                            !is.na(treat),
+                            !is.na(premium_partc),
+                            !is.na(ma_rate)),
+                   method=NULL, distance="mahalanobis")
+
 #9
 
+lp.vars <- final.data2 %>% ungroup() %>%
+  filter((raw_rating>=2.75-.125 & Star_Rating==2.25) |
+          (raw_rating<=2.75+.125 & Star_Rating==3)) %>%
+  mutate(rounded =(Star_Rating==3)) %>%
+  select(HMO, partd, rounded) %>%
+  filter(complete.cases())
 
+lp.covs <- lp.vars %>% select(HMO, partd)
+
+fig.9 <-love.plot(bal.tab(lp.covs,treat=lp.vars$rounded), colours="blue")
 
 save.image("homework4workspace.Rdata")

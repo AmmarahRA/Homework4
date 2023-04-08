@@ -70,15 +70,15 @@ As shown in Figure \@ref(fig:sharefig), the average share of Medicare Advantage 
 
 ## Question 1
 ```{r, include=FALSE}
-plans_table 
+plan_table 
 ```
 
 ```{r table5, include=T, eval=T, echo=F}
 options(knitr.kable.NA = 0)
-knitr::kable(plans_table, 
-             col.names=c("Star Rating", "Average Indicator"),
+knitr::kable(plan_table, 
+             col.names=c("Star Rating", "Rounded to 3", "Rounded to 3.5", "Rounded to 4", "Rounded to 4.5", "Rounded to 5"),
              format.args = list(big.mark=","), 
-             caption = "Number of Plans",
+             caption = "Number of Plans with Rounded up Ratings",
              booktabs = TRUE) %>%
   kable_styling(latex_options = c("hold_position"))
 ```
@@ -90,9 +90,10 @@ table.reg
 ```{r tablereg, include=T, eval=T, echo=F}
 options(knitr.kable.NA = 0)
 knitr::kable(table.reg, 
-             col.names=c("Star Rating", "Estimate"),
+             col.names=c(" ", "Estimate", "Standard Error", "T-Statistic", "P-value", "Confidence Interval",
+                         "Confidence Interval", "Star Rating", "Bandwidth"),
              format.args = list(big.mark=","), 
-             caption = "Estimate of Star Rating Effect",
+             caption = "Star Rating Estimate",
              booktabs = TRUE) %>%
   kable_styling(latex_options = c("hold_position"))
 ```
