@@ -174,8 +174,7 @@ for (i in 1:length(bandwidth)){
 q7.data <- 
   rbind(coef.30_0.1_, coef.30_0.12_, coef.30_0.13_, coef.30_0.14_, coef.30_0.15_,
         coef.35_0.1_, coef.35_0.12_, coef.35_0.13_, coef.35_0.14_, coef.35_0.15_,
-        coef.40_0.1_, coef.40_0.12_, coef.40_0.13_, coef.40_0.14_, coef.40_0.15_,
-        coef.45_0.1_, coef.45_0.12_, coef.45_0.13_, coef.45_0.14_, coef.45_0.15_,
+        coef.40_0.1_, coef.40_0.12_, coef.40_0.13_, coef.40_0.14_, coef.40_0.15_
   ) %>%
   select(term, estimate, std.error, rating, bw) %>%
   filter(term == "score") %>%
@@ -189,8 +188,8 @@ rd.estimates <- q7.data %>%
                 position = position_dodge(width = 0.5)) +
   labs(title = "Star Rating Estimates", x="Bandwidth", y="Estimate") +
   labs(colour = "Star Ratings") +
-  scale_colour_discrete(breaks = c("30", "35", "40", "45"),
-    labels = c("3.0", "3.5", "4.0", "4.5")) +
+  scale_colour_discrete(breaks = c("30", "35", "40"),
+    labels = c("3.0", "3.5", "4.0")) +
   theme_bw()
 rd.estimates
 
@@ -238,16 +237,47 @@ dens_45 <- rddensity(ma.rd4$score, c=0)
 rdplotdensity(dens_45, ma.rd4$score, title = "0.125 BW, 4.5 Rating")
 
 #9
+data_09 <- data_09 %>% mutate(HMO=str_detect(plan_type, "HMO"))
 
 lp.vars <- data_09 %>% ungroup() %>%
-  filter((raw_rating>=2.75-.125 & Star_Rating==2.5) |
-          (raw_rating<=2.75+.125 & Star_Rating==3)) %>%
+  filter((raw_rating>=2.75 -.125 & Star_Rating==2.5) |
+          (raw_rating<=2.75 +.125 & Star_Rating==3)) %>%
   mutate(rounded = (Star_Rating==3)) %>%
-  select(partd, rounded) %>%
+  select(HMO, partd, rounded) %>%
   filter(complete.cases(.))
 
 lp.covs <- lp.vars %>% select(HMO, partd)
 
-fig.9 <-love.plot(bal.tab(lp.covs,treat=lp.vars$rounded), colours="blue")
+fig.9.30 <-love.plot(bal.tab(lp.covs,treat=lp.vars$rounded), colours="blue") +
+  theme_bw() + theme(legend.position = "none")
+fig.9.30
+
+lp.vars <- data_09 %>% ungroup() %>%
+  filter((raw_rating >= 3.25-0.125 & Star_Rating==3.0) |
+           (raw_rating <= 3.25+0.125 & Star_Rating==3.5)) %>%
+  mutate(rounded=(Star_Rating==3.5)) %>%
+  select(HMO, partd, rounded) %>%
+  filter(complete.cases(.))
+
+lp.covs <- lp.vars %>% select(HMO, partd)
+
+fig.9.35 <- love.plot(bal.tab(lp.covs, treat=lp.vars$rounded), colors="blue") + 
+  theme_bw() + theme(legend.position="none")
+
+fig.9.35
+
+lp.vars <- data_09 %>% ungroup() %>%
+  filter((raw_rating >= 3.75-0.125 & Star_Rating==3.5) |
+           (raw_rating <= 3.75+0.125 & Star_Rating==4.0)) %>%
+  mutate(rounded=(Star_Rating==4.0)) %>%
+  select(HMO, partd, rounded) %>%
+  filter(complete.cases(.))
+
+lp.covs <- lp.vars %>% select(HMO, partd)
+
+fig.9.40 <- love.plot(bal.tab(lp.covs, treat=lp.vars$rounded), colors="blue") + 
+  theme_bw() + theme(legend.position="none")
+
+fig.9.40
 
 save.image("homework4workspace.Rdata")
