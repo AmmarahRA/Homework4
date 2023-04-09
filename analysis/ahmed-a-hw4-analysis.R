@@ -1,5 +1,5 @@
 pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata, fixest,
-               modelsummary, rdrobust, broom, cobalt)
+               modelsummary, rdrobust, broom, cobalt, rddensity)
 
 final.data <- read_rds("data/output/final_data.rds")
 
@@ -134,107 +134,119 @@ table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1, coef.45.1) %>%
 
 
 #7
+bandwidth <- c(0.1, 0.12, 0.13, 0.14, 0.15)
 
-for (h in seq(0.1, 0.15, 0.01)) {
+for (i in 1:length(bandwidth)){
   star30bw <- lm(avg_enrollment ~ treat + score,
                  data = (data_09 %>% 
-                           filter(raw_rating>=(2.75-h),
-                                  raw_rating<=(2.75+h),
+                           filter(raw_rating>=(2.75- bandwidth[i]),
+                                  raw_rating<=(2.75+ bandwidth[i]),
                                   Star_Rating %in% c(2.5,3.0)) %>%
                            mutate(treat=(Star_Rating==3.0),
                                   score=raw_rating-2.75)))
-  coef.30 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=30)
+  coef.30 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=30, bw=bandwidth[i])
   
   star35bw <- lm(avg_enrollment ~ treat + score,
                  data = (data_09 %>% 
-                           filter(raw_rating>=(3.25-h),
-                                  raw_rating<=(3.25+h),
+                           filter(raw_rating>=(3.25-bandwidth[i]),
+                                  raw_rating<=(3.25+bandwidth[i]),
                                   Star_Rating %in% c(3.0,3.5)) %>%
                            mutate(treat=(Star_Rating==3.5),
                                   score=raw_rating-3.25)))
-  coef.35 <- tidy(star35bw, conf.int=TRUE) %>% mutate(rating=35)
+  coef.35 <- tidy(star35bw, conf.int=TRUE) %>% mutate(rating=35, bw=bandwidth[i])
   
   star40bw <- lm(avg_enrollment ~ treat + score,
                  data = (data_09 %>% 
-                           filter(raw_rating>=(3.75-h),
-                                  raw_rating<=(3.75+h),
+                           filter(raw_rating>=(3.75- bandwidth[i]),
+                                  raw_rating<=(3.75+ bandwidth[i]),
                                   Star_Rating %in% c(3.5,4.0)) %>%
                            mutate(treat=(Star_Rating==4.0),
                                   score=raw_rating-3.75)))
-  coef.40 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=40)
+  coef.40 <- tidy(star30bw, conf.int=TRUE) %>% mutate(rating=40, bw=bandwidth[i])
   
   star45bw <- lm(avg_enrollment ~ treat + score,
                  data = (data_09 %>% 
-                           filter(raw_rating>=(4.25-h),
-                                  raw_rating<=(4.25+h),
+                           filter(raw_rating>=(4.25- bandwidth[i]),
+                                  raw_rating<=(4.25+ bandwidth[i]),
                                   Star_Rating %in% c(4.0,4.5)) %>%
                            mutate(treat=(Star_Rating==4.5),
                                   score=raw_rating-4.25)))
-  coef.45 <- tidy(star45bw, conf.int=TRUE) %>% mutate(rating=45)
+  coef.45 <- tidy(star45bw, conf.int=TRUE) %>% mutate(rating=45, bw=bandwidth[i])
   
-  est.collect <- rbind(coef.30, coef.35, coef.40) %>%
-    mutate(bandwidth = h)
+  est_dens <- rddensity(data_09$score, c=0)
+  dens_plot <- rdplotdensity(est_dens, data_09$score)
+ 
+  assign(paste0("coef.30_", bandwidth[i], "_"), coef.30)
+  assign(paste0("coef.35_", bandwidth[i], "_"), coef.35)
+  assign(paste0("coef.40_", bandwidth[i], "_"), coef.40)
+  assign(paste0("coef.45_", bandwidth[i], "_"), coef.45)
+  assign(paste0("dens_plot_", bandwidth[i], "_"), dens_plot)
 }
 
+q7.data <- 
+  rbind(coef.30_0.1_, coef.30_0.12_, coef.30_0.13_, coef.30_0.14_, coef.30_0.15_,
+        coef.35_0.1_, coef.35_0.12_, coef.35_0.13_, coef.35_0.14_, coef.35_0.15_,
+        coef.40_0.1_, coef.40_0.12_, coef.40_0.13_, coef.40_0.14_, coef.40_0.15_,
+        coef.45_0.1_, coef.45_0.12_, coef.45_0.13_, coef.45_0.14_, coef.45_0.15_,
+  ) %>%
+  select(term, estimate, std.error, rating, bw) %>%
+  filter(term == "score") %>%
+  mutate(rating = factor(rating), bw = factor(bw))
 
-
-rd.estimates <- est.collect %>% filter(term=="treatTRUE") %>% 
-  ggplot(aes(x=as.factor(bandwidth), y=estimate, shape=as.factor(rating))) +
-  geom_hline(aes(yintercept=0), linetype="dashed") +
-  geom_errorbar(aes(ymin=conf.low, ymax=conf.high),
-                lwd=1, width=0, position=position_dodge(width=0.5)) +
+rd.estimates <- q7.data %>% 
+  ggplot(aes(x = bw, y = estimate, group = rating)) +
+  geom_hline(aes(yintercept = 0), linetype="dashed") +
+  geom_errorbar(aes(x = bw, ymin = estimate - 1.96 * std.error, 
+                    ymax = estimate + 1.96 * std.error), width = .1, 
+                position = position_dodge(width = 0.5)) +
   labs(title = "Star Rating Estimates", x="Bandwidth", y="Estimate") +
   theme_bw()
 
+
 rd.estimates
 
-
-
-ma.rd1 <- table_6 %>%
-  filter(Star_Rating==2.5 | Star_Rating==3)
-
-rd_plot1<- rdplot(y=ma.rd1$mkt_share, x=ma.rd1$score1, binselect="es",
-       title="RD Plot: Market Share for 2.5 vs 3 Stars", x.label="Summary Score",
-       y.label="Market Share", masspoints="off")
-
-ma.rd2 <- est.collect %>%
-  filter(rating==30 | rating==35)
-rd_plot2 <- rdplot(y=ma.rd2$mkt_share, x=ma.rd2$score, binselect="es",
-                   title="RD Plot: Market Share for 3 vs 3.5 Stars", x.label="Summary Score",
-                   y.label="Market Share", masspoints="off")
-
-ma.rd3 <- table_6 %>%
-  filter(Star_Rating==3.5 | Star_Rating==4)
-rd_plot3 <- rdplot(y=ma.rd3$mkt_share, x=ma.rd3$score3, binselect="es",
-                   title="RD Plot: Market Share for 3.5 vs 4 Stars", x.label="Summary Score",
-                   y.label="Market Share", masspoints="off")
-
-ma.rd4 <- table_6 %>%
-  filter(Star_Rating==4 | Star_Rating==4.5)
-rd_plot4 <- rdplot(y=ma.rd4$mkt_share, x=ma.rd4$score4, binselect="es",
-                   title="RD Plot: Market Share for 4 vs 4.5 Stars", x.label="Summary Score",
-                   y.label="Market Share", masspoints="off")
-
 #8
-dens25 <- rddensity(ma.rd1$score1, c=0)
-rdplotdensity(dens25, ma.rd1$score1)
 
-dens3 <- rddensity(ma.rd2$score2, c=0)
-rdplotdensity(dens3, ma.rd2$score2)
+ma.rd1<- data_09 %>% 
+  filter(raw_rating>=(2.75 - 0.125),
+         raw_rating<=(2.75 + 0.125),
+         Star_Rating %in% c(2.5,3.0)) %>%
+  mutate(treat=(Star_Rating==3.0),
+         score=raw_rating-2.75)
+dens_30 <- rddensity(ma.rd1$score, c = 0)
 
-dens4 <- rddensity(ma.rd3$score3, c=0)
-rdplotdensity(dens4, ma.rd3$score3)
+dens_plot_30 <- rdplotdensity(dens_30, ma.rd1$score, title = "0.125 BW, 3.0 Rating") 
 
-dens45 <- rddensity(ma.rd4$score4, c=0)
-rdplotdensity(dens45, ma.rd4$score4)
+ma.rd2<- data_09 %>% 
+  filter(raw_rating>=(3.25-0.125),
+         raw_rating<=(3.25+0.125),
+         Star_Rating %in% c(3.0,3.5)) %>%
+  mutate(treat=(Star_Rating==3.5),
+         score=raw_rating-3.25)
+dens_35 <- rddensity(ma.rd2$score, c=0)
 
-match.dat  matchit(treat~premium_partc + ma_rate,
-                   data=ma.rd225 %>%
-                     filter(window2 TRUE,
-                            !is.na(treat),
-                            !is.na(premium_partc),
-                            !is.na(ma_rate)),
-                   method=NULL, distance="mahalanobis")
+dens_plot_35<- rdplotdensity(dens_35, ma.rd2$score, title = "0.125 BW, 3.5 Rating")
+
+ma.rd3<- data_09 %>% 
+  filter(raw_rating>=(3.75-0.125),
+         raw_rating<=(3.75+0.125),
+         Star_Rating %in% c(3.5,4.0)) %>%
+  mutate(treat=(Star_Rating==4.0),
+         score=raw_rating-3.75)
+dens_40 <- rddensity(ma.rd3$score, c=0)
+
+dens_plot_40<- rdplotdensity(dens_40, ma.rd3$score, title = "0.125 BW, 4.0 Rating")
+
+ma.rd4<- data_09 %>% 
+  filter(raw_rating>=(4.25-0.125),
+         raw_rating<=(4.25+0.125),
+         Star_Rating %in% c(4.0,4.5)) %>%
+  mutate(treat=(Star_Rating==4.5),
+         score=raw_rating-4.25)
+#does not work
+dens_45 <- rddensity(ma.rd4$score, c=0)
+
+rdplotdensity(dens_45, ma.rd4$score, title = "0.125 BW, 4.5 Rating")
 
 #9
 
