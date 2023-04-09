@@ -94,7 +94,7 @@ knitr::kable(table.reg,
              format.args = list(big.mark=","), 
              caption = "Star Rating Estimate",
              booktabs = TRUE) %>%
-  kable_styling(latex_options = c("scale_down", "hold_position"))
+  kable_styling(latex_options = c("hold_position"))
 ```
 
 \newpage 
@@ -109,39 +109,48 @@ Figure \@ref(fig:rdplot1) shows the estimates for the effect of star ratings doe
 \newpage 
 
 ## Question 4
+
+The results in Figures \@ref(fig:densplot1)-\@ref(fig:densplot3) show that the contracts do not appear to manipulate the running variable for ratings of 3.5 and 4.0. There appears to be some manipulation for plans rated 3.0.
+
 ```{r densplot1, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 2.5 vs 3 Stars"}
 dens_plot_30$Estplot
 ```
+
+\newpage
 
 ```{r densplot2, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3 vs 3.5 Stars"}
 dens_plot_35$Estplot
 ```
 
+\newpage
+
 ```{r densplot3, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3.5 vs 4 Stars"}
 dens_plot_40$Estplot
 ```
-
-The results in Figures \@ref(fig:densplot1)-\@ref(fig:densplot3) show that the contracts do not appear to manipulate the running variable.
 
 \newpage 
 
 ## Question 5
 
+The Figures \@ref(fig:fig3)-\@ref(fig:fig4) show the mean differences around the threshold. There appears to be small levels of difference in mean which suggests that there isn't much manipulation of the running variable for the different plan characteristics.
+
 ```{r fig3, include=T, eval=T, echo=F, fig.cap="Covariate Balance, 3.0 vs 3.5 Stars"}
 fig.9.30
 ```
+
 ```{r fig35, include=T, eval=T, echo=F, fig.cap="Covariate Balance, 3.5 vs 4.0 Stars"}
 fig.9.35
 ```
+
 ```{r fig4, include=T, eval=T, echo=F, fig.cap="Covariate Balance, 4.0 vs 4.5 Stars"}
 fig.9.40
 ```
 
-As show in Figures \@ref(fig:fig3)-\@ref(fig:fig4),  
 \newpage 
 
 ## Question 6
-I have incomplete or incorrect answers for some of the questions so I am unable to answer this properly
+
+The findings from questions 1-5 show the average treatment effect of star ratings on enrollment. The increase in star rating of a plan is shown to increase enrollment.
 
 
 
