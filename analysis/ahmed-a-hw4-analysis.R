@@ -85,13 +85,6 @@ plan_table
 
 #6
 
-data_09 <- data_09 %>%
-  mutate(score = raw_rating - 2.25,
-         treat = (score>=0),
-         window1 = (score>=-.175 & score<=.175),
-         window2 = (score>=-.125 & score<=.125),
-         score_treat=score*treat)
-
 star30 <- lm(avg_enrollment ~ treat + score,
                data = (data_09 %>% 
                          filter(raw_rating>=(2.75-0.125),
@@ -171,15 +164,11 @@ for (i in 1:length(bandwidth)){
                            mutate(treat=(Star_Rating==4.5),
                                   score=raw_rating-4.25)))
   coef.45 <- tidy(star45bw, conf.int=TRUE) %>% mutate(rating=45, bw=bandwidth[i])
-  
-  est_dens <- rddensity(data_09$score, c=0)
-  dens_plot <- rdplotdensity(est_dens, data_09$score)
  
   assign(paste0("coef.30_", bandwidth[i], "_"), coef.30)
   assign(paste0("coef.35_", bandwidth[i], "_"), coef.35)
   assign(paste0("coef.40_", bandwidth[i], "_"), coef.40)
   assign(paste0("coef.45_", bandwidth[i], "_"), coef.45)
-  assign(paste0("dens_plot_", bandwidth[i], "_"), dens_plot)
 }
 
 q7.data <- 
@@ -193,15 +182,16 @@ q7.data <-
   mutate(rating = factor(rating), bw = factor(bw))
 
 rd.estimates <- q7.data %>% 
-  ggplot(aes(x = bw, y = estimate, group = rating)) +
+  ggplot(aes(x = bw, y = estimate, group = rating, colour = rating)) +
   geom_hline(aes(yintercept = 0), linetype="dashed") +
   geom_errorbar(aes(x = bw, ymin = estimate - 1.96 * std.error, 
                     ymax = estimate + 1.96 * std.error), width = .1, 
                 position = position_dodge(width = 0.5)) +
   labs(title = "Star Rating Estimates", x="Bandwidth", y="Estimate") +
+  labs(colour = "Star Ratings") +
+  scale_colour_discrete(breaks = c("30", "35", "40", "45"),
+    labels = c("3.0", "3.5", "4.0", "4.5")) +
   theme_bw()
-
-
 rd.estimates
 
 #8
@@ -249,12 +239,12 @@ rdplotdensity(dens_45, ma.rd4$score, title = "0.125 BW, 4.5 Rating")
 
 #9
 
-lp.vars <- final.data2 %>% ungroup() %>%
-  filter((raw_rating>=2.75-.125 & Star_Rating==2.25) |
+lp.vars <- data_09 %>% ungroup() %>%
+  filter((raw_rating>=2.75-.125 & Star_Rating==2.5) |
           (raw_rating<=2.75+.125 & Star_Rating==3)) %>%
-  mutate(rounded =(Star_Rating==3)) %>%
-  select(HMO, partd, rounded) %>%
-  filter(complete.cases())
+  mutate(rounded = (Star_Rating==3)) %>%
+  select(partd, rounded) %>%
+  filter(complete.cases(.))
 
 lp.covs <- lp.vars %>% select(HMO, partd)
 

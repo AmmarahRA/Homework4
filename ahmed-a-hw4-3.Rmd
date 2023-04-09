@@ -105,31 +105,29 @@ knitr::kable(table.reg,
 rd.estimates
 ```
 
-The graphs looks wrong as the range is incorrect but I am unable to fix the error
+Figure \@ref(fig:rdplot1) shows the estimates for the effect of star ratings for different bandwidths. 
 
 \newpage 
 
 ## Question 4
 ```{r densplot1, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 2.5 vs 3 Stars"}
-rdplotdensity(dens25, ma.rd1$score1)
+dens_plot_30
 ```
 
 ```{r densplot2, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3 vs 3.5 Stars"}
-rdplotdensity(dens3, ma.rd2$score2)
+dens_plot_35
 ```
 
 ```{r densplot3, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 3.5 vs 4 Stars"}
-rdplotdensity(dens4, ma.rd3$score3)
+dens_plot_40
 ```
 
-```{r densplot4, include=T, eval=T, echo=F, fig.cap="Manipulation of Running Variable, 4 vs 4.5 Stars"}
-rdplotdensity(dens45, ma.rd4$score4)
-```
+The results from in Figures \@ref(fig:densplot1)-\@ref(fig:densplot3) show that
 
 \newpage 
 
 ## Question 5
-Not sure how to check for manipulation of running variable with specific plan characteristic. Should I filter for the plan types and then use the new dataset? 
+Not sure how to check for manipulation of running variable with specific plan characteristic. 
 
 ## Question 6
 I have incomplete or incorrect answers for some of the questions so I am unable to answer this properly
