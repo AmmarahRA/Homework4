@@ -123,7 +123,7 @@ coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
 
 
 table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1, coef.45.1) %>% 
-  dplyr::select(term, estimate, std.error, rating)
+  dplyr::select(term, estimate, std.error, rating) 
 table.reg$rating <- factor(table.reg$rating,
                            levels = c('30', '35', '40', '45'),
                            labels = c("3.0", "3.5", "4.0", "4.5"))
