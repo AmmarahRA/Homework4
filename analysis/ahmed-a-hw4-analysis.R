@@ -124,6 +124,14 @@ coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
 
 table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1, coef.45.1) %>% 
   mutate(bandwidth = 0.125)
+table.reg$rating <- factor(table.reg$rating,
+                           levels = c('30', '35', '40', '45'),
+                           labels = c("3.0", "3.5", "4.0", "4.5"))
+table.reg <- table.reg %>% dplyr::select(term, estimate, std.error, rating, bandwidth)
+table.reg$term <- factor(table.reg$term,
+                         levels = c('(Intercept)', 'treatTRUE', 'score'),
+                         labels = c("(Intercept)", "Treatment", "Score"))
+
 
 #7
 bandwidth <- c(0.1, 0.12, 0.13, 0.14, 0.15)
