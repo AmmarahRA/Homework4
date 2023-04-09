@@ -130,8 +130,7 @@ coef.45.1 <- tidy(star45, conf.int=TRUE) %>% mutate(rating=45)
 
 
 table.reg<- rbind(coef.30.1, coef.35.1, coef.40.1, coef.45.1) %>% 
-  mutate(bandwidth=0.125)
-
+  mutate(bandwidth = 0.125)
 
 #7
 bandwidth <- c(0.1, 0.12, 0.13, 0.14, 0.15)
